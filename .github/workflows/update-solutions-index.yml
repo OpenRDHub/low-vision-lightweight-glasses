@@ -1,0 +1,25 @@
+name: Update solutions index
+
+on:
+  push:
+    branches: [main]
+    paths: ['solutions/**', 'README.md']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Regenerate solutions index in README
+        run: python3 scripts/update_solutions_index.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "openrd-bot"
+          git config user.email "noreply@github.com"
+          git diff --quiet README.md && echo "index up to date" || (git add README.md && git commit -m "chore: update solutions index [skip ci]" && git push)
