@@ -95,6 +95,13 @@
 - 🐛 [提出问题与需求](https://github.com/OpenRDHub/low-vision-lightweight-glasses/issues)
 - 🔧 提交 Pull Request
 
+## 🗂 方案总览
+
+<!-- SOLUTIONS_INDEX_START -->
+> 暂无提交方案。第一个方案从这里开始 → 阅读 [solutions/ 提交指南](solutions/README.md)
+<!-- SOLUTIONS_INDEX_END -->
+
+
 ## 许可证
 
 待定（License TBD）
