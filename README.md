@@ -98,7 +98,7 @@
 ## 🗂 方案总览
 
 <!-- SOLUTIONS_INDEX_START -->
-> 暂无提交方案。第一个方案从这里开始 → 阅读 [solutions/ 提交指南](solutions/README.md)
+> 暂无提交方案。比赛提交请 Fork 本仓库并开 [「提交成果链接」Issue](../../issues/new/choose)；赛后共建方案见 [solutions/ 指南](solutions/README.md)
 <!-- SOLUTIONS_INDEX_END -->
 
 

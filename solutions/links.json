@@ -1,0 +1,4 @@
+{
+  "_说明": "官方成果登记表。主办方根据「提交成果链接」Issue 核对后录入；README 的方案总览表由 GitHub Actions 自动读取本文件生成。字段：team 团队名 / solution 方案名 / repo Fork仓库链接 / demo 魔搭Demo链接 / status 状态 / summary 一句话简介",
+  "entries": []
+}
