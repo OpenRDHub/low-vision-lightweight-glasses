@@ -1,0 +1,134 @@
+/* Albassist 无障碍样式表 */
+
+/* 全局 */
+QWidget {
+    font-size: 20px;
+    min-height: 44px;
+}
+
+/* 主窗口 */
+QMainWindow {
+    background-color: #FFFFFF;
+}
+
+/* 状态栏 */
+QStatusBar {
+    font-size: 18px;
+    min-height: 30px;
+}
+
+/* 按钮 - 最小 44x44 逻辑像素 */
+QPushButton {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px 16px;
+    font-size: 20px;
+    border: 2px solid #333333;
+    border-radius: 4px;
+    background-color: #F0F0F0;
+}
+
+QPushButton:hover {
+    background-color: #E0E0E0;
+    border-color: #000000;
+}
+
+QPushButton:pressed {
+    background-color: #CCCCCC;
+}
+
+QPushButton:disabled {
+    color: #999999;
+    border-color: #CCCCCC;
+}
+
+/* 工具栏 */
+QToolBar {
+    spacing: 8px;
+    padding: 8px;
+    background-color: #F5F5F5;
+}
+
+/* 滑块 */
+QSlider {
+    min-height: 44px;
+    min-width: 120px;
+}
+
+QSlider::handle:horizontal {
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    background-color: #333333;
+}
+
+/* 标签 */
+QLabel {
+    font-size: 20px;
+    color: #000000;
+}
+
+QLabel[role="heading"] {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+QLabel[role="warning"] {
+    color: #CC0000;
+    font-weight: bold;
+}
+
+QLabel[role="unverified"] {
+    color: #CC6600;
+    font-style: italic;
+}
+
+/* 阅读版文字 */
+QLabel#reading_text {
+    font-size: 48px;
+    color: #000000;
+    background-color: #FFFFFF;
+    padding: 16px;
+}
+
+QLabel#block_highlight {
+    border: 3px solid #0066CC;
+    background-color: #E6F2FF;
+}
+
+/* 选区矩形 */
+QLabel#selection_rect {
+    border: 2px dashed #FF0000;
+    background-color: transparent;
+}
+
+/* 冻结标记 */
+QLabel#freeze_indicator {
+    color: #FFFFFF;
+    background-color: #CC0000;
+    font-weight: bold;
+    padding: 4px 12px;
+    border-radius: 4px;
+}
+
+/* 全局导航小窗 */
+QLabel#nav_minimap {
+    border: 2px solid #333333;
+    background-color: #F0F0F0;
+}
+
+/* 输入选择入口 */
+QFrame#input_selection {
+    border: 2px solid #333333;
+    border-radius: 8px;
+    background-color: #FAFAFA;
+}
+
+/* 焦点高亮 */
+QWidget:focus {
+    border: 3px solid #0066CC;
+}
+
+/* 对比度 4.5:1 目标 */
+/* 黑色 #000000 on 白色 #FFFFFF = 21:1 ✓ */
+/* 按钮文字 #000000 on #F0F0F0 ≈ 15:1 ✓ */
