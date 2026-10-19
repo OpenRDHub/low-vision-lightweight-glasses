@@ -9,6 +9,18 @@ summary: 面向白化病低视力中小学生的 PC 端 AI 助视阅读工具，
 
 面向白化病低视力中小学生的室内学习阅读工具。使用 PC 相机或智能眼镜摄像头输入，把课本原图放大呈现，并用本地 AI（OCR）将选中文字转换成可调字号的大字阅读版，保持与原图位置对应。
 
+## 项目背景
+
+白化病（Albinism）患者因基因缺陷导致黑色素合成不足，常伴随**重度畏光**和**低视力**（视力通常 0.01—0.3）。中国人群发病率约 1/18,000，患者约 10 万人，其中 >90% 伴眼球震颤。目前无根治手段，**未来 3—5 年助视需求刚性不变**。
+
+核心病理机制：白化病低视力不是「模糊」，是「细节少」——患者保有残余视力，核心诉求是**「自己看清楚」**而非「听朗读」。唯一有效路径是**把图像放大到能辨识的程度**。
+
+中小学阶段白化病低视力学生在室内学习阅读课本时面临三重困难：
+
+1. **看不清** — 课本字号小（约 10pt）、对比度低，低视力学生难以辨认
+2. **看不久** — 持续凑近阅读导致眼疲劳、头痛，无法长时间学习
+3. **不敢看** — 教室灯光眩光严重，白化病患者畏光，强光下几乎无法睁眼
+
 ## 团队成员
 
 | 成员 | 角色 |
@@ -77,6 +89,16 @@ PYTHONPATH=src python -m pytest
 # 类型检查
 PYTHONPATH=src python -m mypy src/albassist
 ```
+
+### 配置文件说明
+
+| 文件 | 作用 |
+|------|------|
+| `pyproject.toml` | 项目元数据、依赖、mypy strict、pytest asyncio_mode、import-linter 三条分层契约 |
+| `conftest.py` | pytest 全局配置：检测 asyncio 事件循环可用性，不可用时 skip async 测试 |
+| `src/albassist/app/main.py` | 应用入口：配置眼镜 MJPEG 地址、创建 DI 容器并装配所有依赖 |
+| `src/albassist/app/composition_root.py` | 依赖装配：`create_container(use_fake_ocr, db_path, network_camera_urls)` |
+| `albassist_preferences.db` | 运行时生成：SQLite 偏好数据库（WAL 模式），不存图像/OCR 正文 |
 
 ### 配置智能眼镜摄像头
 
