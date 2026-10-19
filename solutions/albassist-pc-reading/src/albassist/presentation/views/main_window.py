@@ -6,7 +6,7 @@ import threading
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QFileDialog,
@@ -45,6 +45,9 @@ class _FaceAlertController(Protocol):
 
 class MainWindow(QMainWindow):
     """主窗口。"""
+
+    _devices_found = Signal(object)
+    _camera_error = Signal(str)
 
     def __init__(self, view_model: MainViewModel, camera_source: ICameraSource | None = None, face_alert: _FaceAlertController | None = None) -> None:
         super().__init__()
@@ -235,6 +238,9 @@ class MainWindow(QMainWindow):
         self._keyboard.register_action("save_preset", self._on_preset_unavailable)
 
     def _connect_signals(self) -> None:
+        self._devices_found.connect(self._show_camera_choice)
+        self._camera_error.connect(self._vm.error_occurred.emit)
+
         self._btn_camera.clicked.connect(self._on_select_camera)
 
         self._btn_import.clicked.connect(self._on_import_image)
@@ -292,14 +298,14 @@ class MainWindow(QMainWindow):
                     return
                 devices = await camera.list_async()
                 if not devices:
-                    QTimer.singleShot(0, lambda: self._vm.error_occurred.emit("未找到摄像头设备，请检查连接"))
+                    self._camera_error.emit("未找到摄像头设备，请检查连接")
                     return
-                QTimer.singleShot(0, lambda: self._show_camera_choice(devices))
+                self._devices_found.emit(devices)
 
             try:
                 asyncio.run(_run())
             except Exception as e:
-                QTimer.singleShot(0, lambda: self._vm.error_occurred.emit(f"相机搜索失败: {e}"))
+                self._camera_error.emit(f"相机搜索失败: {e}")
 
         threading.Thread(target=_scan, daemon=True, name="camera-scan").start()
 
