@@ -59,10 +59,18 @@ class CameraSourceAdapter:
             for url in self._network_camera_urls
         ]
         empty_count = 0
-        for idx in range(4):
+        for idx in range(6):
             if getattr(cancel_token, "is_cancelled", False):
                 break
-            cap = cv2.VideoCapture(idx, cv2.CAP_DSHOW)
+            cap = None
+            for backend in (cv2.CAP_MSMF, cv2.CAP_DSHOW):
+                cap = cv2.VideoCapture(idx, backend)
+                if cap.isOpened():
+                    break
+                cap.release()
+                cap = None
+            if cap is None:
+                cap = cv2.VideoCapture(idx)
             try:
                 if cap.isOpened():
                     devices.append(

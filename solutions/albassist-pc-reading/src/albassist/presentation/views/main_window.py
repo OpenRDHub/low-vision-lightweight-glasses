@@ -284,30 +284,26 @@ class MainWindow(QMainWindow):
     def _on_select_camera(self) -> None:
         self._switch_view(1)
         self._status_label.setText("正在搜索摄像头...")
+        from PySide6.QtWidgets import QApplication
+        QApplication.processEvents()
 
         if self._camera_source is None:
             self._vm.error_occurred.emit("相机模块未初始化")
             return
 
-        def _scan() -> None:
-            import asyncio
+        import asyncio
 
-            async def _run() -> None:
-                camera = self._camera_source
-                if camera is None:
-                    return
-                devices = await camera.list_async()
-                if not devices:
-                    self._camera_error.emit("未找到摄像头设备，请检查连接")
-                    return
-                self._devices_found.emit(devices)
+        try:
+            devices = asyncio.run(self._camera_source.list_async())
+        except Exception as e:
+            self._vm.error_occurred.emit(f"相机搜索失败: {e}")
+            return
 
-            try:
-                asyncio.run(_run())
-            except Exception as e:
-                self._camera_error.emit(f"相机搜索失败: {e}")
+        if not devices:
+            self._vm.error_occurred.emit("未找到摄像头设备，请检查连接")
+            return
 
-        threading.Thread(target=_scan, daemon=True, name="camera-scan").start()
+        self._show_camera_choice(devices)
 
     def _show_camera_choice(self, devices: list[CameraDevice]) -> None:
         """显示摄像头选择对话框，单个设备直接启动。"""
