@@ -1,5 +1,5 @@
 ---
-team: Albassist Team
+team: 包赢队
 solution: PC 端 AI 助视学习软件
 status: 原型开发中
 summary: 面向白化病低视力中小学生的 PC 端 AI 助视阅读工具，本地离线 OCR + 视觉增强 + 大字阅读版，零网络依赖
