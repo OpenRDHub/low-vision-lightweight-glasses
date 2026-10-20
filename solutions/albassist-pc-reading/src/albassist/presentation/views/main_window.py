@@ -291,10 +291,8 @@ class MainWindow(QMainWindow):
             self._vm.error_occurred.emit("相机模块未初始化")
             return
 
-        import asyncio
-
         try:
-            devices = asyncio.run(self._camera_source.list_async())
+            devices = self._camera_source.list_cameras()  # type: ignore[attr-defined]
         except Exception as e:
             self._vm.error_occurred.emit(f"相机搜索失败: {e}")
             return
@@ -325,23 +323,18 @@ class MainWindow(QMainWindow):
         self._status_label.setText(f"正在启动 {device.name}...")
 
         def _start() -> None:
-            import asyncio
-
-            async def _run() -> None:
+            try:
                 camera = self._camera_source
                 if camera is None:
                     return
                 camera.set_error_callback(
                     lambda msg: self._vm.error_occurred.emit(msg)
                 )
-                await camera.start_async(
+                camera.start_camera(  # type: ignore[attr-defined]
                     device.device_id,
                     self._vm.on_frame_captured,
                 )
                 self._vm.set_status(f"相机已连接 - {device.name}（按 F 冻结）")
-
-            try:
-                asyncio.run(_run())
             except Exception as e:
                 self._vm.error_occurred.emit(f"相机启动失败: {e}")
 
@@ -358,23 +351,18 @@ class MainWindow(QMainWindow):
         self._status_label.setText("正在连接局域网摄像头...")
 
         def _start() -> None:
-            import asyncio
-
-            async def _run() -> None:
+            try:
                 camera = self._camera_source
                 if camera is None:
                     return
                 camera.set_error_callback(
                     lambda msg: self._vm.error_occurred.emit(msg)
                 )
-                await camera.start_async(
+                camera.start_camera(  # type: ignore[attr-defined]
                     device_id,
                     self._vm.on_frame_captured,
                 )
                 self._vm.set_status("局域网摄像头已连接 - MJPEG（按 F 冻结）")
-
-            try:
-                asyncio.run(_run())
             except Exception as exc:
                 self._vm.error_occurred.emit(f"局域网摄像头启动失败: {exc}")
 

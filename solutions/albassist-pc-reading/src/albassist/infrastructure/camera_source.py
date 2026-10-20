@@ -44,8 +44,8 @@ class CameraSourceAdapter:
         self._on_error: Callable[[str], None] | None = None
         self._importer = OpenCvImageImporter()
 
-    async def list_async(self, cancel_token: object | None = None) -> list[CameraDevice]:
-        """枚举本地相机。
+    def list_cameras(self) -> list[CameraDevice]:
+        """同步枚举本地相机。
 
         网络 MJPEG 地址通过显式 ``mjpeg|URL`` 传入，不在枚举阶段扫描局域网，
         避免网络探测阻塞界面或意外访问其他设备。
@@ -60,9 +60,7 @@ class CameraSourceAdapter:
         ]
         empty_count = 0
         for idx in range(6):
-            if getattr(cancel_token, "is_cancelled", False):
-                break
-            cap = None
+            cap: cv2.VideoCapture | None = None
             for backend in (cv2.CAP_MSMF, cv2.CAP_DSHOW):
                 cap = cv2.VideoCapture(idx, backend)
                 if cap.isOpened():
@@ -89,16 +87,29 @@ class CameraSourceAdapter:
                 break
         return devices
 
-    async def start_async(
+    async def list_async(self, cancel_token: object | None = None) -> list[CameraDevice]:
+        """异步枚举本地相机（委托同步实现）。"""
+        return self.list_cameras()
+
+    def stop_camera(self) -> None:
+        """同步停止相机采集。"""
+        self._stop_event.set()
+        if self._thread is not None:
+            self._thread.join(timeout=2.0)
+            self._thread = None
+        if self._capture is not None:
+            self._capture.release()
+            self._capture = None
+
+    def start_camera(
         self,
         device_id: str,
         on_frame: Callable[[ImageFrame], None],
-        cancel_token: object | None = None,
     ) -> None:
-        """启动本地或 MJPEG 网络相机采集。"""
+        """同步启动本地或 MJPEG 网络相机采集。"""
         if not callable(on_frame):
             raise TypeError("on_frame 必须是可调用对象")
-        await self.stop_async()
+        self.stop_camera()
         self._on_frame = on_frame
         self._stop_event.clear()
         self._buffer.clear()
@@ -142,15 +153,18 @@ class CameraSourceAdapter:
         )
         self._thread.start()
 
+    async def start_async(
+        self,
+        device_id: str,
+        on_frame: Callable[[ImageFrame], None],
+        cancel_token: object | None = None,
+    ) -> None:
+        """异步启动相机采集（委托同步实现）。"""
+        self.start_camera(device_id, on_frame)
+
     async def stop_async(self, cancel_token: object | None = None) -> None:
-        """停止相机采集。"""
-        self._stop_event.set()
-        if self._thread is not None:
-            self._thread.join(timeout=2.0)
-            self._thread = None
-        if self._capture is not None:
-            self._capture.release()
-            self._capture = None
+        """异步停止相机采集（委托同步实现）。"""
+        self.stop_camera()
 
     async def aclose(self) -> None:
         await self.stop_async()
