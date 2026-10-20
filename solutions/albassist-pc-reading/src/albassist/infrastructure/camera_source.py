@@ -120,7 +120,15 @@ class CameraSourceAdapter:
             if idx < 0:
                 self._stop_event.set()
                 raise ValueError("本地相机设备 ID 不能为负数")
-            capture = cv2.VideoCapture(idx, cv2.CAP_DSHOW)
+            capture: cv2.VideoCapture | None = None
+            for backend in (cv2.CAP_MSMF, cv2.CAP_DSHOW):
+                capture = cv2.VideoCapture(idx, backend)
+                if capture.isOpened():
+                    break
+                capture.release()
+                capture = None
+            if capture is None:
+                capture = cv2.VideoCapture(idx)
             if not capture.isOpened():
                 capture.release()
                 self._stop_event.set()
