@@ -48,10 +48,12 @@ class FakeOcrEngine:
         request: RecognitionRequest,
         cancel_token: object | None = None,
     ) -> OcrResult:
-        import asyncio
+        return self.recognize(request)
+
+    def recognize(self, request: RecognitionRequest) -> OcrResult:
         import time
 
-        await asyncio.sleep(0.3)
+        time.sleep(0.3)
 
         roi = request.region_of_interest
         w = max(roi.width, 1)

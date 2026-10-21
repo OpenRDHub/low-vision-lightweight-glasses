@@ -31,6 +31,9 @@ class OpenCvFaceDetector:
         return self._ready
 
     async def warmup_async(self, cancel_token: object | None = None) -> None:
+        self.warmup()
+
+    def warmup(self) -> None:
         import cv2
 
         self._cascade = None
@@ -50,6 +53,9 @@ class OpenCvFaceDetector:
         frame: ImageFrame,
         cancel_token: object | None = None,
     ) -> FaceDetectionResult:
+        return self.detect(frame)
+
+    def detect(self, frame: ImageFrame) -> FaceDetectionResult:
         if not self._ready or self._cascade is None:
             raise RuntimeError("人脸检测器未就绪，请先调用 warmup_async")
 

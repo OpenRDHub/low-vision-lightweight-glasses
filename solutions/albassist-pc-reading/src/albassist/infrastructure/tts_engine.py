@@ -42,7 +42,10 @@ class TtsEngineAdapter:
         language: str = "zh",
         cancel_token: object | None = None,
     ) -> None:
-        """朗读文字。"""
+        self.speak(text, rate, language)
+
+    def speak(self, text: str, rate: float = 1.0, language: str = "zh") -> None:
+        """同步朗读文字。"""
         if not self._ready or self._engine is None:
             raise OcrEngineNotReadyError("TTS 引擎未就绪，请检查语音包是否安装")
 

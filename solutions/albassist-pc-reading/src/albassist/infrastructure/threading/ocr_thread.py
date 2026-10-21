@@ -65,35 +65,19 @@ class OcrWorker:
 
     def _work_loop(self) -> None:
         """推理工作循环（后台线程）。"""
-        import asyncio
+        while self._running:
+            item = self._queue.take(timeout=0.5)
+            if item is None:
+                continue
 
-        try:
+            request, cancel_token = item
+            if cancel_token.is_cancelled:
+                continue
+
             try:
-                loop: asyncio.AbstractEventLoop = asyncio.SelectorEventLoop()
-            except (NotImplementedError, OSError):
-                loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        except OSError:
-            return
-
-        try:
-            while self._running:
-                item = self._queue.take(timeout=0.5)
-                if item is None:
-                    continue
-
-                request, cancel_token = item
-                if cancel_token.is_cancelled:
-                    continue
-
-                try:
-                    result = loop.run_until_complete(
-                        self._engine.recognize_async(request, cancel_token)
-                    )
-                    if not cancel_token.is_cancelled:
-                        self._on_result(result)
-                except Exception as e:
-                    if not cancel_token.is_cancelled:
-                        self._on_error(str(e))
-        finally:
-            loop.close()
+                result = self._engine.recognize(request)  # type: ignore[attr-defined]
+                if not cancel_token.is_cancelled:
+                    self._on_result(result)
+            except Exception as e:
+                if not cancel_token.is_cancelled:
+                    self._on_error(str(e))

@@ -71,6 +71,9 @@ class RapidOcrEngine:
         request: RecognitionRequest,
         cancel_token: object | None = None,
     ) -> OcrResult:
+        return self.recognize(request)
+
+    def recognize(self, request: RecognitionRequest) -> OcrResult:
         if not self._ready or self._ocr is None:
             raise OcrEngineNotReadyError("OCR 引擎未就绪，请先调用 warmup_async")
 

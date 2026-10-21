@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-import asyncio
+
 import queue
 import threading
 import time
@@ -75,37 +75,26 @@ class FaceAlertWorker:
 
     def _work_loop(self) -> None:
         try:
-            try:
-                loop: asyncio.AbstractEventLoop = asyncio.SelectorEventLoop()
-            except (NotImplementedError, OSError):
-                loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        except OSError:
-            return
+            self._detector.warmup()  # type: ignore[attr-defined]
+        except Exception:
+            pass
 
-        try:
+        while self._running:
             try:
-                loop.run_until_complete(self._detector.warmup_async())
+                frame = self._frame_queue.get(timeout=0.5)
+            except queue.Empty:
+                continue
+
+            if not self.is_enabled:
+                continue
+
+            try:
+                result = self._detector.detect(frame)  # type: ignore[attr-defined]
+                self._handle_detection(result.face_count)
             except Exception:
                 pass
-            while self._running:
-                try:
-                    frame = self._frame_queue.get(timeout=0.5)
-                except queue.Empty:
-                    continue
 
-                if not self.is_enabled:
-                    continue
-
-                try:
-                    result = loop.run_until_complete(self._detector.detect_async(frame))
-                    self._handle_detection(result.face_count, loop)
-                except Exception:
-                    pass
-        finally:
-            loop.close()
-
-    def _handle_detection(self, count: int, loop: asyncio.AbstractEventLoop) -> None:
+    def _handle_detection(self, count: int) -> None:
         now = time.monotonic()
         with self._lock:
             changed = count != self._last_count
@@ -118,7 +107,7 @@ class FaceAlertWorker:
 
         if message:
             try:
-                loop.run_until_complete(self._tts.speak_async(message))
+                self._tts.speak(message)  # type: ignore[attr-defined]
             except Exception:
                 pass
 
