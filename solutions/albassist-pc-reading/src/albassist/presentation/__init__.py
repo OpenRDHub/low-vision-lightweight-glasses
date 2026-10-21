@@ -1,0 +1,1 @@
+"""Presentation 表示层 - PySide6 视图与 ViewModel。"""

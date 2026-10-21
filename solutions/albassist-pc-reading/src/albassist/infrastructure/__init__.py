@@ -1,0 +1,1 @@
+"""Infrastructure 适配器层 - 相机、SQLite、线程基础设施。"""
