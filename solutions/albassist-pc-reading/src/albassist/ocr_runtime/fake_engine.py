@@ -38,6 +38,9 @@ class FakeOcrEngine:
         )
 
     async def warmup_async(self, cancel_token: object | None = None) -> None:
+        self.warmup()
+
+    def warmup(self) -> None:
         self._ready = True
 
     async def recognize_async(

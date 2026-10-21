@@ -7,7 +7,7 @@ import threading
 
 from PySide6.QtWidgets import QApplication
 
-from albassist.app.composition_root import create_container, load_visual_config, save_visual_config
+from albassist.app.composition_root import create_container, load_visual_config_sync, save_visual_config_sync
 from albassist.application.ports.camera_source import ICameraSource
 from albassist.application.ports.image_importer import IImageImporter
 from albassist.application.ports.ocr_engine import IOcrEngine
@@ -54,12 +54,10 @@ def main() -> int:
     view_model.original_frame_changed.connect(face_alert.on_frame)
 
     def _warmup() -> None:
-        import asyncio
-        coro = ocr_engine.warmup_async()
         try:
-            asyncio.run(coro)
+            ocr_engine.warmup()  # type: ignore[attr-defined]
         except Exception:
-            coro.close()
+            pass
 
     threading.Thread(target=_warmup, daemon=True, name="ocr-warmup").start()
 
@@ -67,17 +65,15 @@ def main() -> int:
     window.show()
 
     def on_import_image(path: str) -> None:
-        import asyncio
-
-        async def _load() -> None:
+        def _load() -> None:
             try:
-                frame = await importer.load_async(path)
+                frame = importer.load(path)  # type: ignore[attr-defined]
                 view_model.set_original_frame(frame)
                 view_model.set_status("图片已导入 - 按 F 冻结")
             except Exception as e:
                 view_model.error_occurred.emit(str(e))
 
-        threading.Thread(target=lambda: asyncio.run(_load()), daemon=True, name="image-load").start()
+        threading.Thread(target=_load, daemon=True, name="image-load").start()
 
     _active_token: list[CancellationToken | None] = [None]
 
@@ -111,9 +107,8 @@ def main() -> int:
     view_model.cancel_requested.connect(on_cancel_recognize)
 
     def _save_config(config: VisualConfig) -> None:
-        import asyncio
         try:
-            asyncio.run(save_visual_config(preference_store, config))
+            save_visual_config_sync(preference_store, config)  # type: ignore[arg-type]
         except Exception:
             pass
 
@@ -122,17 +117,11 @@ def main() -> int:
     )
 
     def _init_config() -> None:
-        import asyncio
-
-        async def _init() -> None:
-            config = await load_visual_config(preference_store)
-            view_model.set_visual_config(config)
-
-        coro = _init()
         try:
-            asyncio.run(coro)
+            config = load_visual_config_sync(preference_store)  # type: ignore[arg-type]
+            view_model.set_visual_config(config)
         except Exception:
-            coro.close()
+            pass
 
     threading.Thread(target=_init_config, daemon=True, name="config-init").start()
 

@@ -40,6 +40,10 @@ class OpenCvImageImporter:
             UnsupportedImageFormatError: 不支持的格式。
             ImageDecodeError: 解码失败。
         """
+        return self.load(path)
+
+    def load(self, path: str) -> ImageFrame:
+        """同步从文件路径加载图片。"""
         p = Path(path)
         if not p.exists():
             raise ImageDecodeError(f"文件不存在: {path}")

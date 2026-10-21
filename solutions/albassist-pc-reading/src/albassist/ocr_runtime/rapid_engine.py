@@ -55,6 +55,9 @@ class RapidOcrEngine:
         )
 
     async def warmup_async(self, cancel_token: object | None = None) -> None:
+        self.warmup()
+
+    def warmup(self) -> None:
         try:
             from rapidocr_onnxruntime import RapidOCR
 

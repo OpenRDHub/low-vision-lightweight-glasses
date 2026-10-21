@@ -122,6 +122,30 @@ async def load_visual_config(store: IUserPreferenceStore) -> VisualConfig:
     return VisualConfig.reset()
 
 
+def load_visual_config_sync(store: SqlitePreferenceStore) -> VisualConfig:
+    """同步从偏好存储加载 VisualConfig，失败回退默认。"""
+    import json
+
+    try:
+        pref = store.load_sync("visual_config")
+        if pref is not None:
+            data = json.loads(pref.value)
+            return VisualConfig(
+                zoom_factor=data.get("zoom_factor", 1.0),
+                visual_mode=VisualMode(data.get("visual_mode", "original")),
+                contrast_level=data.get("contrast_level", 1.0),
+                font_size=data.get("font_size", 48),
+                line_spacing=data.get("line_spacing", 1.5),
+                text_color=data.get("text_color", "#000000"),
+                background_color=data.get("background_color", "#FFFFFF"),
+                binarize_threshold=data.get("binarize_threshold", 127.5),
+                eye_care=bool(data.get("eye_care", False)),
+            )
+    except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+        warnings.warn(f"视觉配置加载失败，已回退默认值: {exc}", RuntimeWarning, stacklevel=2)
+    return VisualConfig.reset()
+
+
 async def save_visual_config(store: IUserPreferenceStore, config: VisualConfig) -> None:
     """保存 VisualConfig 到偏好存储。"""
     import json
@@ -143,3 +167,26 @@ async def save_visual_config(store: IUserPreferenceStore, config: VisualConfig) 
         updated_at=datetime.now(timezone.utc),
     )
     await store.save_async(pref)
+
+
+def save_visual_config_sync(store: SqlitePreferenceStore, config: VisualConfig) -> None:
+    """同步保存 VisualConfig 到偏好存储。"""
+    import json
+
+    data = {
+        "zoom_factor": config.zoom_factor,
+        "visual_mode": config.visual_mode.value,
+        "contrast_level": config.contrast_level,
+        "font_size": config.font_size,
+        "line_spacing": config.line_spacing,
+        "text_color": config.text_color,
+        "background_color": config.background_color,
+        "binarize_threshold": config.binarize_threshold,
+        "eye_care": config.eye_care,
+    }
+    pref = UserPreference(
+        key="visual_config",
+        value=json.dumps(data),
+        updated_at=datetime.now(timezone.utc),
+    )
+    store.save_sync(pref)

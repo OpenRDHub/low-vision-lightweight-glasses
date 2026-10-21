@@ -62,6 +62,9 @@ class SqlitePreferenceStore:
         key: str,
         cancel_token: object | None = None,
     ) -> UserPreference | None:
+        return self.load_sync(key)
+
+    def load_sync(self, key: str) -> UserPreference | None:
         with self._lock:
             try:
                 assert self._conn is not None
@@ -85,6 +88,9 @@ class SqlitePreferenceStore:
         preference: UserPreference,
         cancel_token: object | None = None,
     ) -> None:
+        self.save_sync(preference)
+
+    def save_sync(self, preference: UserPreference) -> None:
         with self._lock:
             try:
                 assert self._conn is not None
