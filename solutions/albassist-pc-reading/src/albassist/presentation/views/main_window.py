@@ -26,7 +26,7 @@ from PySide6.QtWidgets import (
 
 from albassist.application.ports.camera_source import CameraDevice, ICameraSource
 from albassist.domain.models.ocr_models import OcrBlock
-from albassist.domain.models.visual_config import VisualMode
+from albassist.domain.models.visual_config import VisualConfig, VisualMode
 from albassist.presentation.services.keyboard_router import KeyboardRouter
 from albassist.presentation.views.original_view import OriginalView
 from albassist.presentation.views.reading_view import ReadingView
@@ -262,17 +262,17 @@ class MainWindow(QMainWindow):
         self._act_mode_local_contrast.triggered.connect(lambda: self._vm.set_visual_mode(VisualMode.LOCAL_CONTRAST))
         self._act_eye_care.toggled.connect(self._on_eye_care_action_toggled)
 
-        self._vm.status_message_changed.connect(self._status_label.setText)
-        self._vm.info_message.connect(self._status_label.setText)
-        self._vm.info_message.connect(lambda msg: self.show_temporary_message(msg))
-        self._vm.original_frame_changed.connect(self._on_frame_changed)
-        self._vm.visual_config_changed.connect(self._on_config_changed)
-        self._vm.is_frozen_changed.connect(self._on_frozen_changed)
-        self._vm.is_recognizing_changed.connect(self._on_recognizing_changed)
-        self._vm.blocks_changed.connect(self._on_blocks_changed)
-        self._vm.current_block_changed.connect(self._reading_view.set_current_block)
-        self._vm.current_block_changed.connect(self._on_current_block_changed)
-        self._vm.error_occurred.connect(self._on_error)
+        self._vm.status_message_changed.connect(self._status_label.setText, Qt.QueuedConnection)
+        self._vm.info_message.connect(self._status_label.setText, Qt.QueuedConnection)
+        self._vm.info_message.connect(lambda msg: self.show_temporary_message(msg), Qt.QueuedConnection)
+        self._vm.original_frame_changed.connect(self._on_frame_changed, Qt.QueuedConnection)
+        self._vm.visual_config_changed.connect(self._on_config_changed, Qt.QueuedConnection)
+        self._vm.is_frozen_changed.connect(self._on_frozen_changed, Qt.QueuedConnection)
+        self._vm.is_recognizing_changed.connect(self._on_recognizing_changed, Qt.QueuedConnection)
+        self._vm.blocks_changed.connect(self._on_blocks_changed, Qt.QueuedConnection)
+        self._vm.current_block_changed.connect(self._reading_view.set_current_block, Qt.QueuedConnection)
+        self._vm.current_block_changed.connect(self._on_current_block_changed, Qt.QueuedConnection)
+        self._vm.error_occurred.connect(self._on_error, Qt.QueuedConnection)
 
         self._original_view.selection_changed.connect(self._on_selection_changed)
         self._reading_view.view_original_requested.connect(lambda: self._switch_view(1))
@@ -405,6 +405,10 @@ class MainWindow(QMainWindow):
     def _on_cancel(self) -> None:
         if self._vm.is_recognizing:
             self._vm.cancel_requested.emit()
+        self._vm.set_visual_config(VisualConfig.reset())
+        self._vm.set_status("已恢复默认视觉设置")
+        self._original_view.clear_selection()
+        self._switch_view(1)
 
     def _on_toggle_view(self) -> None:
         if self._stack.currentIndex() == 1:
